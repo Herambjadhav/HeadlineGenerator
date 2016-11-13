@@ -25,7 +25,9 @@ if __name__ == "__main__":
     if(len(sys.argv)>1):
         filePath = sys.argv[1]
     else:
-        
+        print("Error file not found. Please check that the file exists\n")
+        print("File path to be specified as input command line argument\n")
+        exit(0)
 
     initTagger(filePath)
 
