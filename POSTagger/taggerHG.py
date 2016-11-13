@@ -2,6 +2,10 @@ import nltk
 import sys
 
 
+grammar1 = nltk.CFG.fromstring("""
+    S -> NP VP
+""")
+
 def readFile(filePath):
     with open(filePath, 'r', encoding="latin1") as f:
         # Open file and read Lines
@@ -16,7 +20,7 @@ def readFile(filePath):
             return None
 
 
-def extractNounPhrasesFromTree(tokenTree):
+def extractNounPhrasesFromTree(tokenTree,posTokens,tokens):
     g= "S"
 
 def initTagger(filePath):
@@ -29,17 +33,32 @@ def initTagger(filePath):
             # perform POS Tagging on the tokens
             posTokens = nltk.pos_tag(tokens)
 
+
+
+
             # pattern to recognize noun phrases
-            pattern = "NP: {<DT>?<JJ>*<NN>*<NNP>*<NNS>*}"
+            patternNP = "NP: {<DT>?<JJ>*<NN>*<NNP>*<NNS>*}"
+            # patternVP = "VP: {<VBN>(<DT>?<JJ>*<NN>*<NNP>*<NNS>*<IN>*)}"
+
+
             # pattern = "NP: { < DT | PP\$ > ? < JJ > * < NN >}{ < NNP > +}{ < NN > +}"
 
             # create chunk parser
-            NPChunker = nltk.RegexpParser(pattern)
+            # NPChunker = nltk.RegexpParser(patternNP)
+            NPChunker = nltk.RegexpParser('''
+                            NP: {<DT>? <JJ>* <NN>* <NNP>* <NNS>*} # NP modified
+                            P: {<IN>}           # Preposition
+                            V: {<V.*>}          # Verb
+                            PP: {<P> <NP>}      # PP -> P NP
+                            VP: {<V> <NP|PP>*}  # VP -> V (NP|PP)*
+                            ''')
+            # VPChunker = nltk.RegexpParser(patternVP)
 
             # parse the sentences of tokens
-            result = NPChunker.parse(posTokens)
+            resultNP = NPChunker.parse(posTokens)
+            # resultVP = VPChunker.parse(posTokens)
 
-            extractNounPhrasesFromTree(result)
+
             g = "S"
         else:
             return "No text in input file"
@@ -50,7 +69,7 @@ if __name__ == "__main__":
     # Sanity check for input filename
     if(len(sys.argv)>1):
         # filePath = sys.argv[1]
-        filePath = "sum_test3.txt"
+        filePath = "sum_test1.txt"
     else:
         print("Error file not found. Please check that the file exists\n")
         print("File path to be specified as input command line argument\n")
