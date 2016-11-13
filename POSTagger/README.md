@@ -1,6 +1,10 @@
 # HeadlineGenerator/POSTagger
 
+taggerHG.py
 Takes the input summarized text file and uses nltk package to identify Parts of speech.
+
+keywords.py
+Takes an article and return the top n keywords based on frequency and excludes stopwords.
 
 Run:
 python taggerHG.py sum_test1.txt 
@@ -32,5 +36,10 @@ References:
 		<a href="http://www.nltk.org/book/ch07.html">http://www.nltk.org/book/ch07.html</a>
 	</li>
 
+	NP main ambiguity
+	http://stackoverflow.com/questions/5544475/does-an-algorithm-exist-to-help-detect-the-primary-topic-of-an-english-sentenc
+
+	Various grammar regex parsers
+	http://blog.quibb.org/2010/01/nltk-regular-expression-parser-regexpparser/
 	
 </ul>
