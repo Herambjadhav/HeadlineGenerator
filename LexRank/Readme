@@ -1,0 +1,5 @@
+#LexRank Summarization
+
+LexRankSummarizer.py takes a text file and the number of summary lines required as command line argument.
+To run: 
+Example: LexRankSummarizer.py article.txt 4
