@@ -70,7 +70,7 @@ def summarize(textContent, summaryLines):
     matrix = constructMatrix(sentences)
     sortedSentences = pageRank(matrix, sentences)
 
-    print(sortedSentences)
+    #print(sortedSentences)
     topLines = sortedSentences[0:min(summaryLines, len(sortedSentences))]
 
     summary = ''
@@ -79,7 +79,7 @@ def summarize(textContent, summaryLines):
 
     return summary
 
-print ('Argument count : ', len(sys.argv))
+#print ('Argument count : ', len(sys.argv))
 #exit if file name is not provided as command line argument
 if len(sys.argv) != 3:
     print ('Please send file name as command line argument')
@@ -87,7 +87,7 @@ if len(sys.argv) != 3:
 
 fileName = sys.argv[1]
 summaryLines = int(sys.argv[2])
-print ('File name : ', fileName, ' SummaryLines : ', summaryLines)
+#print ('File name : ', fileName, ' SummaryLines : ', summaryLines)
 
 #read all lines of file
 fileHandler = open(fileName,"r", encoding="latin1")
@@ -95,7 +95,7 @@ content = fileHandler.read()
 fileHandler.close()
 
 summary = summarize(content, summaryLines)
-print(summary)
+#print(summary)
 
 #write output to file
 fileHandler = open("summary.txt","w", encoding="latin1")
