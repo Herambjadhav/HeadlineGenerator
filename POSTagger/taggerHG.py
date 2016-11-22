@@ -2,6 +2,43 @@ import nltk
 import sys
 from collections import defaultdict
 from HelperClasses.tree import Tree
+from pycorenlp import StanfordCoreNLP
+from nltk.tag import StanfordPOSTagger
+
+
+def chunk_tagged_sents(tagged_sents):
+    from nltk.chunk import regexp
+
+    # define a chunk "grammar", i.e. chunking rules
+    grammar = r"""
+        NP: {<DT|PP\$>?<JJ>*<NN.*>+} # noun phrase
+        PP: {<IN><NP>}               # prepositional phrase
+        VP: {<MD>?<VB.*><NP|PP>}     # verb phrase
+        CLAUSE: {<NP><VP>}           # full clause
+	"""
+    chunker = regexp.RegexpParser(grammar, loop=2)
+    chunked_sents = [chunker.parse(tagged_sent) for tagged_sent in tagged_sents]
+
+    return chunked_sents
+
+
+def get_chunks(chunked_sents, chunk_type='NP'):
+    all_chunks = []
+    # chunked sentences are in the form of nested trees
+    for tree in chunked_sents:
+        chunks = []
+        # iterate through subtrees / leaves to get individual chunks
+        raw_chunks = [subtree.leaves() for subtree in tree.subtrees()
+                      if subtree.node == chunk_type]
+        for raw_chunk in raw_chunks:
+            chunk = []
+            for word_tag in raw_chunk:
+                # drop POS tags, keep words
+                chunk.append(word_tag[0])
+            chunks.append(' '.join(chunk))
+        all_chunks.append(chunks)
+
+    return all_chunks
 
 def readFile(filePath):
     with open(filePath, 'r', encoding="latin1") as f:
@@ -29,39 +66,184 @@ def dictToList(inputDict):
         i += 1
     return outputList
 
+
+# def printTreeSentences(sentenceTree):
+    # for node in sentenceTree:
+def makeSentences(dependecyGraph):
+
+    k = None
+    subject = list()
+    object = list()
+    verb = list()
+    for eachSentence in dependecyGraph:
+
+        dependencies = eachSentence['enhancedPlusPlusDependencies']
+        k =dependencies
+        for eachDependancy in dependencies:
+
+            if(":" in eachDependancy['dep']):
+                searchPOS = eachDependancy['dep'][:eachDependancy['dep'].index(":")]
+            else:
+                searchPOS = eachDependancy['dep']
+
+            if(searchPOS == 'ROOT'):
+                verb.append(eachDependancy)
+            if(searchPOS == 'nsubj'):
+                subject.append(eachDependancy)
+
+            for eachObjectType in ['dobj','nmod','compound']:
+                if (eachObjectType in searchPOS):
+                    object.append(eachDependancy)
+
+    # print("Subjects")
+    # for eachsubject in subject:
+    #     print(eachsubject['dependentGloss'])
+    #
+    # print("----------")
+    #
+    #
+    # print("Verbs")
+    # for eachverb in verb:
+    #     print(eachverb['dependentGloss'])
+    #
+    # print("----------")
+    #
+    # print("Objects")
+    # for eachobject in object:
+    #     print(eachobject['dependentGloss'])
+
+    rootIndex = verb[0]['dependent']
+
+    connectedSubjects = list()
+    connectedObjects = list()
+
+
+    # Connected Subject
+    for eachSubject in subject:
+        if(eachSubject['governor'] == rootIndex):
+            connectedSubjects.append(eachSubject)
+
+    for eachObject in object:
+        if (eachObject['governor'] == rootIndex):
+            connectedObjects.append(eachObject)
+
+    # Connected Object
+    if(len(connectedObjects) > 0):
+        blah = digInto(list(),k,connectedObjects[0])
+        POS = nltk.pos_tag([eachResult['dependentGloss'] for eachResult in blah])
+        for eachPOS in POS:
+            if ('NN' in eachPOS[1]):
+                if ('ing' not in eachPOS[0][-3:]):
+                    connectedObjects.append(eachPOS[0])
+
+    if (len(connectedSubjects) > 0):
+        blah2 = digInto(list(),k,connectedSubjects[0])
+        POS = nltk.pos_tag([eachResult['dependentGloss'] for eachResult in blah2])
+        for eachPOS in POS:
+            if ('NN' in eachPOS[1]):
+                connectedSubjects.append(eachPOS[0])
+
+    startPhrase = list()
+    for eachDictItem in connectedSubjects:
+        startPhrase.append(extractDependentGloss(eachDictItem))
+
+    endPhrase = list()
+    for eachDictItem in connectedObjects:
+        endPhrase.append(extractDependentGloss(eachDictItem))
+
+
+    print(startPhrase)
+    print("----------------")
+    print(verb)
+    print("----------------")
+    print(endPhrase)
+    print('end')
+
+    sentenceBlocks = dict()
+    sentenceBlocks['subject'] = startPhrase
+    sentenceBlocks['verb'] = verb
+    sentenceBlocks['object'] = endPhrase
+    return sentenceBlocks
+
+# def hasDependancy(entry,depList):
+#     depIndex = entry['dependant']
+#     for eachDep in depList:
+#         if(eachDep['governor'] == depIndex):
+
+
+# def digDeeper(root,dependency,subject,object):
+    # while()
+def extractDependentGloss(inputDict):
+    if (isinstance(inputDict, dict)):
+        return inputDict['dependentGloss']
+    else:
+        return inputDict
+
+
+
+
+def digInto(stack,k,entry):
+    for eachItem in k:
+        if(eachItem['governor'] == entry['dependent']):
+            stack.append(eachItem)
+            digInto(stack,k,eachItem)
+
+    return stack
+
 def possibleHeadlines(orderedSet):
 
     orderedList = dictToList(orderedSet)
+    sentenceTree = defaultdict(list)
+    rowIndex = 0
+    prev = orderedList[0][1][0]
 
-    sentenceTree = Tree()
 
-    sentenceTree.add_node("ROOT")
-    parentReference = sentenceTree.nodes['ROOT'].identifier
-    parentsReferenceList = list()
-    parentsVerbReferenceList = list()
-    # eachNode is a tuple where
-    # tuple[0] is the type of phrase
-    # tuple[1] is the Tree of the POS Tagger
     for eachNode in orderedList:
 
-        if(eachNode[1][0] == "NP"):
+        pos = eachNode[1][0]
 
-            childID = str(eachNode[0])
-            sentenceTree.add_node(childID,parentReference)
-            parentsReferenceList.append(childID)
+        if ("N" in prev and "V" in pos):
+            rowIndex += 1
+        if("V" in prev and "N" in pos):
+            rowIndex += 1
 
-        if(eachNode[1][0] == "V"):
+        sentenceTree[rowIndex].append(eachNode)
+        prev = pos
 
-            for eachNodeparent in parentsReferenceList:
-                childID = str(eachNode[0])
-                sentenceTree.add_node(childID,eachNodeparent)
-                parentsVerbReferenceList.append(childID)
-            parentsReferenceList = []
-        # print("TEST")
 
-    possibleHeadlines = list()
 
-    print(orderedSet)
+    print ("WEAR")
+
+    #
+    # sentenceTree = Tree()
+    #
+    # sentenceTree.add_node("ROOT")
+    # parentReference = sentenceTree.nodes['ROOT'].identifier
+    # parentsReferenceList = list()
+    # parentsVerbReferenceList = list()
+    # # eachNode is a tuple where
+    # # tuple[0] is the type of phrase
+    # # tuple[1] is the Tree of the POS Tagger
+    # for eachNode in orderedList:
+    #
+    #     if(eachNode[1][0] == "NP"):
+    #
+    #         childID = str(eachNode[0])
+    #         sentenceTree.add_node(childID,parentReference)
+    #         parentsReferenceList.append(childID)
+    #
+    #     if(eachNode[1][0] == "V"):
+    #
+    #         for eachNodeparent in parentsReferenceList:
+    #             childID = str(eachNode[0])
+    #             sentenceTree.add_node(childID,eachNodeparent)
+    #             parentsVerbReferenceList.append(childID)
+    #         parentsReferenceList = []
+    #     # print("TEST")
+    #
+    # possibleHeadlines = list()
+    #
+    # print(orderedSet)
 
 def getMainVerb(verbPhrase):
     verbs = []
@@ -72,20 +254,15 @@ def getMainVerb(verbPhrase):
                 return verbs
     return None
 
-def getNNPNode(nodeList):
+def getNPNodes(nodeList):
     NPNodeList = list()
 
     for eachnode in nodeList:
         if(hasattr(eachnode,"_label")):
             if(eachnode._label == "NP"):
-                for nodes in eachnode:
-                    if(nodes[1] == 'NNP' or nodes[1] == 'NNPS'):
-                        NPNodeList.add(eachnode)
+                NPNodeList.append(eachnode)
 
-    if(NPNodeList):
-        return (NPNodeList)
-    else:
-        return None
+    return (NPNodeList)
 
 def getSingleNNPNode(nodeList):
     NPNodeList = list()
@@ -99,12 +276,36 @@ def getSingleNNPNode(nodeList):
                         return (NPNodeList)
     return None
 
+def getSingleNNNode(nodeList):
+    NPNodeList = list()
+
+    for eachnode in nodeList:
+        if(hasattr(eachnode,"_label")):
+            if(eachnode._label == "NP"):
+                for nodes in eachnode:
+                    if(nodes[1] == 'NN'):
+                        NPNodeList.append(eachnode)
+                        return (NPNodeList)
+    return None
+
+
+
+def getSentenceTree(posTree):
+
+    for eachnode in posTree:
+        # If the node is a tree
+        if(hasattr(eachnode,"_label")):
+            print("TREE")
+        else:
+            print("LEAF")
+
 
 def makePossibleHeadlines(result):
 
     orderedSubset = dict()
 
     NNPList = []
+    NNList = []
 
     ignoreIndex = []
 
@@ -133,6 +334,14 @@ def makePossibleHeadlines(result):
 
 
 
+    #Pick up simple NP with NN
+    for nodeIndex in range(0,treeLength):
+        if(hasattr(result[nodeIndex],"_label")):
+            NNNodes = getSingleNNNode([result[nodeIndex]])
+            if(NNNodes):
+                orderedSubset[nodeIndex] = ('NP', NNNodes)
+                NNList += NNPNodes
+
     #Get the verb (Predicates) that join Subject and Object
     for nodeIndex in range(0, treeLength):
         if(hasattr(result[nodeIndex],"_label")):
@@ -146,7 +355,20 @@ def makePossibleHeadlines(result):
 
     return orderedSubset
 
+def filterNounPhrases(nounWords,nounPhrases):
+    probableNounPhrases = list()
 
+
+    for nounWord in nounWords:
+        score = 0
+        for nounPhrase in nounPhrases:
+            for treeNode in nounWord:
+                if(nounPhrase in treeNode[0]):
+                    score += 1
+        if(score > 0):
+            probableNounPhrases.append([nounWord,score])
+
+    return (probableNounPhrases)
 
 
 def getDescribersCommas(tokens):
@@ -171,7 +393,16 @@ def initTagger(filePath):
             posTokens = nltk.pos_tag(tokens)
 
 
+            # p = Parser()
+            # linkages = p.parse_sent("This is a simple sentence.")
+            nlp = StanfordCoreNLP('http://localhost:9000')
 
+            output = nlp.annotate(summarizedText, properties={
+                'annotators': 'tokenize,ssplit,pos,depparse,parse',
+                'outputFormat': 'json'
+            })
+
+            sentenceBlocks = makeSentences(output['sentences'])
 
             # pattern to recognize noun phrases
             patternNP = "NP: {<DT>?<JJ>*<NN>*<NNP>*<NNS>*}"
@@ -181,23 +412,41 @@ def initTagger(filePath):
             # pattern = "NP: { < DT | PP\$ > ? < JJ > * < NN >}{ < NNP > +}{ < NN > +}"
 
             # create chunk parser
-            # NPChunker = nltk.RegexpParser(patternNP)
+            NPChunker = nltk.RegexpParser(patternNP)
             NPChunker = nltk.RegexpParser('''
-                            NP: {<DT>? <JJ>* <NN>* <NNP>* <NNS>* <PP>*} # NP modified
+                            NP: {<DT>? <JJ>* <NN>* <NNP>* <NNS>* <NP>*} # NP modified
                             P: {<IN>}           # Preposition
                             V: {<V.*>}          # Verb
-                            PP: {<P> <NP>}      # PP -> P NP
+                            PP: {<P>}      # PP -> P NP
                             VP: {<V> <NP|PP>*}  # VP -> V (NP|PP)*
                             ''')
+
+            # NPChunker = nltk.RegexpParser('''
+            #                             NP: {<DT|PP\$>?<JJ>*<NN.*>+} # noun phrase
+            #                             VP: {<MD>?<VB.*><NP|PP>}     # verb phrase
+            #                             S: {<NP><VP>}           # full clause
+            #                             PP: { < IN > < NP|CD> }  # prepositional phrase
+            #                             ''')
+
+
+
             # VPChunker = nltk.RegexpParser(patternVP)
 
             # parse the sentences of tokens
+            # resultNP2 = chunk_tagged_sents(posTokens)
             resultNP = NPChunker.parse(posTokens)
             # resultVP = VPChunker.parse(posTokens)
+            # print("aSD")
+            NPNodes = getNPNodes(resultNP)
 
-            # resultNP.draw()
-            orderedSubset = makePossibleHeadlines(resultNP)
-            possibleHeadlines(orderedSubset)
+
+            subjects = filterNounPhrases(NPNodes,sentenceBlocks['subject'])
+            verb = sentenceBlocks['verb']
+            objects = filterNounPhrases(NPNodes, sentenceBlocks['object'])
+
+
+
+
         else:
             return "No text in input file"
 
@@ -205,7 +454,7 @@ if __name__ == "__main__":
     # Get the file path from command line
     # requires sys package
     # Sanity check for input filename
-    filePath = "Data/sum_test3.txt"
+    # filePath = "Data/sum_test1.txt"
 
     # if(len(sys.argv)>1):
     #     filePath = sys.argv[1]
