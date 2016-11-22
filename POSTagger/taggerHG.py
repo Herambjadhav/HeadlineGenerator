@@ -1,11 +1,15 @@
 import nltk
 import sys
+import POSTagger.ginger
+import operator
 from collections import defaultdict
 from HelperClasses.tree import Tree
+from nltk.stem.porter import PorterStemmer
+from nltk.stem.wordnet import WordNetLemmatizer
 from pycorenlp import StanfordCoreNLP
 from nltk.tag import StanfordPOSTagger
 
-
+# OwcGPStx23RZHbY9
 def chunk_tagged_sents(tagged_sents):
     from nltk.chunk import regexp
 
@@ -152,12 +156,12 @@ def makeSentences(dependecyGraph):
         endPhrase.append(extractDependentGloss(eachDictItem))
 
 
-    print(startPhrase)
-    print("----------------")
-    print(verb)
-    print("----------------")
-    print(endPhrase)
-    print('end')
+    # print(startPhrase)
+    # print("----------------")
+    # print(verb)
+    # print("----------------")
+    # print(endPhrase)
+    # print('end')
 
     sentenceBlocks = dict()
     sentenceBlocks['subject'] = startPhrase
@@ -210,40 +214,6 @@ def possibleHeadlines(orderedSet):
         sentenceTree[rowIndex].append(eachNode)
         prev = pos
 
-
-
-    print ("WEAR")
-
-    #
-    # sentenceTree = Tree()
-    #
-    # sentenceTree.add_node("ROOT")
-    # parentReference = sentenceTree.nodes['ROOT'].identifier
-    # parentsReferenceList = list()
-    # parentsVerbReferenceList = list()
-    # # eachNode is a tuple where
-    # # tuple[0] is the type of phrase
-    # # tuple[1] is the Tree of the POS Tagger
-    # for eachNode in orderedList:
-    #
-    #     if(eachNode[1][0] == "NP"):
-    #
-    #         childID = str(eachNode[0])
-    #         sentenceTree.add_node(childID,parentReference)
-    #         parentsReferenceList.append(childID)
-    #
-    #     if(eachNode[1][0] == "V"):
-    #
-    #         for eachNodeparent in parentsReferenceList:
-    #             childID = str(eachNode[0])
-    #             sentenceTree.add_node(childID,eachNodeparent)
-    #             parentsVerbReferenceList.append(childID)
-    #         parentsReferenceList = []
-    #     # print("TEST")
-    #
-    # possibleHeadlines = list()
-    #
-    # print(orderedSet)
 
 def getMainVerb(verbPhrase):
     verbs = []
@@ -355,10 +325,17 @@ def makePossibleHeadlines(result):
 
     return orderedSubset
 
+def TreeToList(inputTree):
+    returnList = list()
+    for eachNode in inputTree[0]:
+        returnList.append(eachNode[0])
+    return returnList
+
 def filterNounPhrases(nounWords,nounPhrases):
     probableNounPhrases = list()
+    returnNounPhrases = list()
 
-
+    maxScore = 0
     for nounWord in nounWords:
         score = 0
         for nounPhrase in nounPhrases:
@@ -366,9 +343,18 @@ def filterNounPhrases(nounWords,nounPhrases):
                 if(nounPhrase in treeNode[0]):
                     score += 1
         if(score > 0):
+            if(score > maxScore):
+                maxScore = score
             probableNounPhrases.append([nounWord,score])
 
-    return (probableNounPhrases)
+    probableNounPhrases.sort(key=operator.itemgetter(1),reverse=True)
+    for eachNounPhrase in probableNounPhrases:
+        # if(eachNounPhrase[1] >= maxScore):
+        returnNounPhrases.append(TreeToList(eachNounPhrase))
+        # else:
+        #     break
+
+    return (returnNounPhrases)
 
 
 def getDescribersCommas(tokens):
@@ -382,73 +368,84 @@ def getDescribersCommas(tokens):
 
             commaIndex += 1
 
-def initTagger(filePath):
-    if(filePath):
-        summarizedText = readFile(filePath)
-        if(not summarizedText is None):
-            # split the input text into tokens
-            tokens = nltk.word_tokenize(summarizedText,language='english')
+def initTagger(summarizedText):
+    if(summarizedText):
+        # split the input text into tokens
+        tokens = nltk.word_tokenize(summarizedText,language='english')
 
-            # perform POS Tagging on the tokens
-            posTokens = nltk.pos_tag(tokens)
+        # perform POS Tagging on the tokens
+        posTokens = nltk.pos_tag(tokens)
 
 
-            # p = Parser()
-            # linkages = p.parse_sent("This is a simple sentence.")
-            nlp = StanfordCoreNLP('http://localhost:9000')
+        # p = Parser()
+        # linkages = p.parse_sent("This is a simple sentence.")
+        nlp = StanfordCoreNLP('http://localhost:9000')
 
-            output = nlp.annotate(summarizedText, properties={
-                'annotators': 'tokenize,ssplit,pos,depparse,parse',
-                'outputFormat': 'json'
-            })
+        output = nlp.annotate(summarizedText, properties={
+            'annotators': 'tokenize,ssplit,pos,depparse,parse',
+            'outputFormat': 'json'
+        })
 
-            sentenceBlocks = makeSentences(output['sentences'])
+        sentenceBlocks = makeSentences(output['sentences'])
 
-            # pattern to recognize noun phrases
-            patternNP = "NP: {<DT>?<JJ>*<NN>*<NNP>*<NNS>*}"
-            # patternVP = "VP: {<VBN>(<DT>?<JJ>*<NN>*<NNP>*<NNS>*<IN>*)}"
+        # pattern to recognize noun phrases
+        patternNP = "NP: {<DT>?<JJ>*<NN>*<NNP>*<NNS>*}"
+        # patternVP = "VP: {<VBN>(<DT>?<JJ>*<NN>*<NNP>*<NNS>*<IN>*)}"
 
 
-            # pattern = "NP: { < DT | PP\$ > ? < JJ > * < NN >}{ < NNP > +}{ < NN > +}"
+        # pattern = "NP: { < DT | PP\$ > ? < JJ > * < NN >}{ < NNP > +}{ < NN > +}"
 
-            # create chunk parser
-            NPChunker = nltk.RegexpParser(patternNP)
-            NPChunker = nltk.RegexpParser('''
-                            NP: {<DT>? <JJ>* <NN>* <NNP>* <NNS>* <NP>*} # NP modified
-                            P: {<IN>}           # Preposition
-                            V: {<V.*>}          # Verb
-                            PP: {<P>}      # PP -> P NP
-                            VP: {<V> <NP|PP>*}  # VP -> V (NP|PP)*
-                            ''')
+        # create chunk parser
+        NPChunker = nltk.RegexpParser(patternNP)
+        NPChunker = nltk.RegexpParser('''
+                        NP: {<DT>? <JJ>* <NN>* <NNP>* <NNS>* <NP>*} # NP modified
+                         # P: {<IN>}           # Preposition
+                         # V: {<V.*>}          # Verb
+                         # PP: {<P>}      # PP -> P NP
+                         # VP: {<V> <NP|PP>*}  # VP -> V (NP|PP)*
+                        ''')
 
-            # NPChunker = nltk.RegexpParser('''
-            #                             NP: {<DT|PP\$>?<JJ>*<NN.*>+} # noun phrase
-            #                             VP: {<MD>?<VB.*><NP|PP>}     # verb phrase
-            #                             S: {<NP><VP>}           # full clause
-            #                             PP: { < IN > < NP|CD> }  # prepositional phrase
-            #                             ''')
+        # NPChunker = nltk.RegexpParser('''
+        #                             NP: {<DT|PP\$>?<JJ>*<NN.*>+} # noun phrase
+        #                             VP: {<MD>?<VB.*><NP|PP>}     # verb phrase
+        #                             S: {<NP><VP>}           # full clause
+        #                             PP: { < IN > < NP|CD> }  # prepositional phrase
+        #                             ''')
 
 
 
-            # VPChunker = nltk.RegexpParser(patternVP)
+        # VPChunker = nltk.RegexpParser(patternVP)
 
-            # parse the sentences of tokens
-            # resultNP2 = chunk_tagged_sents(posTokens)
-            resultNP = NPChunker.parse(posTokens)
-            # resultVP = VPChunker.parse(posTokens)
-            # print("aSD")
-            NPNodes = getNPNodes(resultNP)
-
-
-            subjects = filterNounPhrases(NPNodes,sentenceBlocks['subject'])
-            verb = sentenceBlocks['verb']
-            objects = filterNounPhrases(NPNodes, sentenceBlocks['object'])
+        # parse the sentences of tokens
+        # resultNP2 = chunk_tagged_sents(posTokens)
+        resultNP = NPChunker.parse(posTokens)
+        # resultVP = VPChunker.parse(posTokens)
+        # print("aSD")
+        NPNodes = getNPNodes(resultNP)
 
 
+        subjects = filterNounPhrases(NPNodes,sentenceBlocks['subject'])
+        verb = sentenceBlocks['verb'][0]['dependentGloss']
+        objects = filterNounPhrases(NPNodes, sentenceBlocks['object'])
 
 
-        else:
-            return "No text in input file"
+        porter_stemmer = PorterStemmer()
+        verb = porter_stemmer.stem(verb)
+        lmtzr = WordNetLemmatizer()
+        verb = lmtzr.lemmatize(verb, 'v')+'s'
+
+        keyParts = dict()
+        keyParts['subject'] = subjects
+        keyParts['verb'] = [verb]
+        keyParts['object'] = objects
+
+        return keyParts
+
+    else:
+        return "No text in input file"
+
+
+
 
 if __name__ == "__main__":
     # Get the file path from command line
@@ -464,8 +461,26 @@ if __name__ == "__main__":
     #     print("File path to be specified as input command line argument\n")
     #     exit(0)
 
-    filePath = "Data/sum_test19.txt"
-    initTagger(filePath)
+    filePath = "Data/sum_test7.txt"
+    summarizedText = readFile(filePath)
+
+    print(summarizedText)
+
+    print("-------")
+
+    dictionaryParts = initTagger(summarizedText)
+
+    for eachSubject in dictionaryParts['subject']:
+        for eachVerb in dictionaryParts['verb']:
+            if(dictionaryParts['object']):
+                for eachObject in dictionaryParts['object']:
+                    # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb+" "+' '.join(eachObject)))
+                    print(' '.join(eachSubject) + " " + eachVerb + " " + ' '.join(eachObject))
+            else:
+                # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb))
+                print(' '.join(eachSubject) + " " + eachVerb)
+
+    print("-------")
 
     # filePath = "Data/sum_test2.txt"
     # initTagger(filePath)
