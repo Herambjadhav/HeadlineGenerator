@@ -1,4 +1,5 @@
 # Python file for Text Rank
+# Input: Text file containing an article & the number of sentences the program will give as the output
 import sys
 import nltk
 import itertools
@@ -64,26 +65,34 @@ def keyphrases(content):
                 keyphrasesset.add(secondtoken)
         i += 1
         j += 1
-    print('Key phrases: ', keyphrasesset)
+    f = open("KeyPhrasesOutput.txt", "a")
+    f.truncate(0)
+    for x in keyphrasesset:
+        f.write(x)
+        f.write('\n')
+    f.close()
 
 
-def sentences(content):
+def sentences(content, totalsentences):
     sentencetokens = nltk.data.load('tokenizers/punkt/english.pickle').tokenize(content.strip())
     sentencesgraph = makegraph(sentencetokens)
     sentencepagerank = networkx.pagerank(sentencesgraph, weight='weight')
     allsentences = sorted(sentencepagerank, key=sentencepagerank.get, reverse=True)
-    sentence = ' '.join(allsentences)
-    tokensentences = sentence.split()[0:100]
-    sentence = ' '.join(tokensentences)
-    print('Summary sentence: ', sentence)
+    f = open("SummarizedSentencesOutput.txt", "a")
+    f.truncate(0)
+    for x in range(0, totalsentences):
+        f.write(allsentences[x])
+        f.write('\n')
+    f.close()
 
 
 def main():
     filename = sys.argv[1]
+    totalsentences = int(sys.argv[2])
     filecontent = open(filename, "r")
     content = filecontent.read()
     keyphrases(content)
-    sentences(content)
+    sentences(content, totalsentences)
 
 
 if __name__ == '__main__':
