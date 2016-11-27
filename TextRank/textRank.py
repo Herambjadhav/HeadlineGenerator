@@ -65,7 +65,7 @@ def keyphrases(content):
                 keyphrasesset.add(secondtoken)
         i += 1
         j += 1
-    f = open("keyphrase.txt", "a")
+    f = open("keyphrase.txt", "a", encoding="latin1")
     f.truncate(0)
     for x in keyphrasesset:
         f.write(x)
@@ -78,7 +78,7 @@ def sentences(content, totalsentences):
     sentencesgraph = makegraph(sentencetokens)
     sentencepagerank = networkx.pagerank(sentencesgraph, weight='weight')
     allsentences = sorted(sentencepagerank, key=sentencepagerank.get, reverse=True)
-    f = open("summary.txt", "a")
+    f = open("summary.txt", "a", encoding="latin1")
     f.truncate(0)
     for x in range(0, totalsentences):
         f.write(allsentences[x])
@@ -89,7 +89,7 @@ def sentences(content, totalsentences):
 def main():
     filename = sys.argv[1]
     totalsentences = int(sys.argv[2])
-    filecontent = open(filename, "r")
+    filecontent = open(filename, "r", encoding="latin1")
     content = filecontent.read()
     keyphrases(content)
     sentences(content, totalsentences)
