@@ -1,15 +1,15 @@
 import nltk
 import sys
-import POSTagger.ginger
+
 import operator
 from collections import defaultdict
-from HelperClasses.tree import Tree
+
 from nltk.stem.porter import PorterStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
 from pycorenlp import StanfordCoreNLP
 from nltk.tag import StanfordPOSTagger
 
-# OwcGPStx23RZHbY9
+
 def chunk_tagged_sents(tagged_sents):
     from nltk.chunk import regexp
 
@@ -24,7 +24,6 @@ def chunk_tagged_sents(tagged_sents):
     chunked_sents = [chunker.parse(tagged_sent) for tagged_sent in tagged_sents]
 
     return chunked_sents
-
 
 def get_chunks(chunked_sents, chunk_type='NP'):
     all_chunks = []
@@ -99,22 +98,6 @@ def makeSentences(dependecyGraph):
                 if (eachObjectType in searchPOS):
                     object.append(eachDependancy)
 
-    # print("Subjects")
-    # for eachsubject in subject:
-    #     print(eachsubject['dependentGloss'])
-    #
-    # print("----------")
-    #
-    #
-    # print("Verbs")
-    # for eachverb in verb:
-    #     print(eachverb['dependentGloss'])
-    #
-    # print("----------")
-    #
-    # print("Objects")
-    # for eachobject in object:
-    #     print(eachobject['dependentGloss'])
 
     rootIndex = verb[0]['dependent']
 
@@ -156,27 +139,12 @@ def makeSentences(dependecyGraph):
         endPhrase.append(extractDependentGloss(eachDictItem))
 
 
-    # print(startPhrase)
-    # print("----------------")
-    # print(verb)
-    # print("----------------")
-    # print(endPhrase)
-    # print('end')
-
     sentenceBlocks = dict()
     sentenceBlocks['subject'] = startPhrase
     sentenceBlocks['verb'] = verb
     sentenceBlocks['object'] = endPhrase
     return sentenceBlocks
 
-# def hasDependancy(entry,depList):
-#     depIndex = entry['dependant']
-#     for eachDep in depList:
-#         if(eachDep['governor'] == depIndex):
-
-
-# def digDeeper(root,dependency,subject,object):
-    # while()
 def extractDependentGloss(inputDict):
     if (isinstance(inputDict, dict)):
         return inputDict['dependentGloss']
@@ -389,12 +357,6 @@ def initTagger(summarizedText):
         sentenceBlocks = makeSentences(output['sentences'])
 
         # pattern to recognize noun phrases
-        patternNP = "NP: {<DT>?<JJ>*<NN>*<NNP>*<NNS>*}"
-        # patternVP = "VP: {<VBN>(<DT>?<JJ>*<NN>*<NNP>*<NNS>*<IN>*)}"
-
-
-        # pattern = "NP: { < DT | PP\$ > ? < JJ > * < NN >}{ < NNP > +}{ < NN > +}"
-
         # create chunk parser
         NPChunker = nltk.RegexpParser(patternNP)
         NPChunker = nltk.RegexpParser('''
@@ -405,22 +367,9 @@ def initTagger(summarizedText):
                          # VP: {<V> <NP|PP>*}  # VP -> V (NP|PP)*
                         ''')
 
-        # NPChunker = nltk.RegexpParser('''
-        #                             NP: {<DT|PP\$>?<JJ>*<NN.*>+} # noun phrase
-        #                             VP: {<MD>?<VB.*><NP|PP>}     # verb phrase
-        #                             S: {<NP><VP>}           # full clause
-        #                             PP: { < IN > < NP|CD> }  # prepositional phrase
-        #                             ''')
 
-
-
-        # VPChunker = nltk.RegexpParser(patternVP)
-
-        # parse the sentences of tokens
-        # resultNP2 = chunk_tagged_sents(posTokens)
         resultNP = NPChunker.parse(posTokens)
-        # resultVP = VPChunker.parse(posTokens)
-        # print("aSD")
+
         NPNodes = getNPNodes(resultNP)
 
 
@@ -453,32 +402,39 @@ if __name__ == "__main__":
     # Sanity check for input filename
     # filePath = "Data/sum_test1.txt"
 
-    # if(len(sys.argv)>1):
-    #     filePath = sys.argv[1]
-    #     filePath = "Data/sum_test1.txt"
-    # else:
-    #     print("Error file not found. Please check that the file exists\n")
-    #     print("File path to be specified as input command line argument\n")
-    #     exit(0)
+    if(len(sys.argv)>1):
+        filePath = sys.argv[1]
+        # filePath = "Data/sum_test1.txt"
+    else:
+        print("Error file not found. Please check that the file exists\n")
+        print("File path to be specified as input command line argument\n")
+        exit(0)
 
-    filePath = "Data/sum_test7.txt"
+    # filePath = "Data/sum_test3.txt"
     summarizedText = readFile(filePath)
 
     print(summarizedText)
 
     print("-------")
 
-    dictionaryParts = initTagger(summarizedText)
+    try:
 
-    for eachSubject in dictionaryParts['subject']:
-        for eachVerb in dictionaryParts['verb']:
-            if(dictionaryParts['object']):
-                for eachObject in dictionaryParts['object']:
-                    # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb+" "+' '.join(eachObject)))
-                    print(' '.join(eachSubject) + " " + eachVerb + " " + ' '.join(eachObject))
-            else:
-                # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb))
-                print(' '.join(eachSubject) + " " + eachVerb)
+        dictionaryParts = initTagger(summarizedText)
+
+        for eachSubject in dictionaryParts['subject']:
+            for eachVerb in dictionaryParts['verb']:
+                if(dictionaryParts['object']):
+                    for eachObject in dictionaryParts['object']:
+                        # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb+" "+' '.join(eachObject)))
+                        print(' '.join(eachSubject) + " " + eachVerb + " " + ' '.join(eachObject))
+                else:
+                    # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb))
+                    print(' '.join(eachSubject) + " " + eachVerb)
+
+    except:
+        print("Exception: Check whether you have started the CoreNLP server e.g.\n")
+        print("$ cd stanford-corenlp-full-2015-12-09/ \n")
+        print("$ java -mx4g -cp \"*\" edu.stanford.nlp.pipeline.StanfordCoreNLPServer")
 
     print("-------")
 
