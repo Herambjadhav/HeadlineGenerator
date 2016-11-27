@@ -1,13 +1,14 @@
 import nltk
 import sys
-
+import random
 import operator
-from collections import defaultdict
 
+from collections import defaultdict
 from nltk.stem.porter import PorterStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
 from pycorenlp import StanfordCoreNLP
-from nltk.tag import StanfordPOSTagger
+from nltk.tokenize import sent_tokenize
+
 
 
 def chunk_tagged_sents(tagged_sents):
@@ -338,10 +339,12 @@ def getDescribersCommas(tokens):
 
 def initTagger(summarizedText):
     if(summarizedText):
-        # split the input text into tokens
-        tokens = nltk.word_tokenize(summarizedText,language='english')
+        # split the input text into sentences extract the 1st one
+        sent_tokenize_list = sent_tokenize(summarizedText)
 
+        tokens = nltk.word_tokenize(sent_tokenize_list[0], language='english')
         # perform POS Tagging on the tokens
+
         posTokens = nltk.pos_tag(tokens)
 
 
@@ -358,7 +361,7 @@ def initTagger(summarizedText):
 
         # pattern to recognize noun phrases
         # create chunk parser
-        NPChunker = nltk.RegexpParser(patternNP)
+        # NPChunker = nltk.RegexpParser(patternNP)
         NPChunker = nltk.RegexpParser('''
                         NP: {<DT>? <JJ>* <NN>* <NNP>* <NNS>* <NP>*} # NP modified
                          # P: {<IN>}           # Preposition
@@ -396,6 +399,9 @@ def initTagger(summarizedText):
 
 
 
+
+
+
 if __name__ == "__main__":
     # Get the file path from command line
     # requires sys package
@@ -406,19 +412,19 @@ if __name__ == "__main__":
         filePath = sys.argv[1]
         # filePath = "Data/sum_test1.txt"
     else:
-        print("Error file not found. Please check that the file exists\n")
-        print("File path to be specified as input command line argument\n")
-        exit(0)
+        # print("Error file not found. Please check that the file exists\n")
+        # print("File path to be specified as input command line argument\n")
+        exit(1)
 
     # filePath = "Data/sum_test3.txt"
     summarizedText = readFile(filePath)
 
-    print(summarizedText)
+    # print(summarizedText)
 
-    print("-------")
+    # print("-------")
 
     try:
-
+        possibleHeadlies = list()
         dictionaryParts = initTagger(summarizedText)
 
         for eachSubject in dictionaryParts['subject']:
@@ -426,17 +432,20 @@ if __name__ == "__main__":
                 if(dictionaryParts['object']):
                     for eachObject in dictionaryParts['object']:
                         # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb+" "+' '.join(eachObject)))
-                        print(' '.join(eachSubject) + " " + eachVerb + " " + ' '.join(eachObject))
+                        possibleHeadlies.append(' '.join(eachSubject) + " " + eachVerb + " " + ' '.join(eachObject))
                 else:
                     # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb))
-                    print(' '.join(eachSubject) + " " + eachVerb)
+                    possibleHeadlies.append(' '.join(eachSubject) + " " + eachVerb)
+
+        with open('headline.txt', 'w', encoding="latin1") as f:
+            headlineString = random.choice(possibleHeadlies)
+            f.write(headlineString+".")
+        f.close()
 
     except:
-        print("Exception: Check whether you have started the CoreNLP server e.g.\n")
-        print("$ cd stanford-corenlp-full-2015-12-09/ \n")
-        print("$ java -mx4g -cp \"*\" edu.stanford.nlp.pipeline.StanfordCoreNLPServer")
+        exit(1)
 
-    print("-------")
+    # print("-------")
 
     # filePath = "Data/sum_test2.txt"
     # initTagger(filePath)
