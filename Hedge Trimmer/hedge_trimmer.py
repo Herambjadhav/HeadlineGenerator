@@ -1,21 +1,12 @@
 import os, nltk, sys
+from string import punctuation
 from nltk.parse import stanford
-from nltk.tree import  Tree
-from nltk.tree import ParentedTree as p
-# os.environ['STANFORD_PARSER'] = 'C:\\Users\\RJ\\stanford-parser-full-2015-12-09\\stanford-parser.jar'
-# os.environ['STANFORD_MODELS'] = 'C:\\Users\\RJ\\stanford-parser-full-2015-12-09\\stanford-parser-3.6.0-models.jar'
-java_path = "C:\\Program Files\\Java\\jre1.8.0_111\\bin\\java.exe"
-os.environ['JAVAHOME'] = java_path
-# sentences1 = Tree.fromstring("An international relief agency announced Wednesday that it is withdrawing from North Korea.")
+from nltk.tree import Tree
+
+# java_path = "C:\\Program Files\\Java\\jre1.8.0_111\\bin\\java.exe"
+# os.environ['JAVAHOME'] = java_path
+
 parser = stanford.StanfordParser(model_path="C:\\Users\\RJ\\stanford-parser-full-2015-12-09\\edu\\stanford\\nlp\\models\\lexparser\\englishPCFG.ser.gz")
-# sentences = parser.raw_parse("IN AN election that left Republicans in charge of the presidency, Congress, and many state governments, California shines like a ray of hope for Democrats")
-# sentences = parser.raw_parse("Kurdish guerilla forces moving with lightning speed poured into Kirkuk today immediately after Iraqi troops, fleeing relentless U.S. airstrikes, abandoned the hub of Iraqs rich northern oil fields.")
-# sentences= parser.raw_parse("Rebels agree to talks with government officials said tuesday")
-# sentences = parser.raw_parse("An international relief agency announced Wednesday that it is withdrawing from North Korea.")
-# sentences = parser.raw_parse("A fire killed a firefighter who was fatally injured as he searched the house")
-# sentences = parser.raw_parse("According to a now finalized blueprint described by U.S. officials and other sources, the Bush administration plans to take complete, unilateral control of a post-Saddam Hussein Iraq")
-# sentences = parser.raw_parse("A suspect fled from police after engaging in lewd behavior in Doheny Memorial Library Saturday afternoon, prompting the building’s evacuation and a two hour attempt to apprehend the suspect inside. ")
-# sentences = parser.raw_parse("USC students Brian Zatulove, Zach Wise, Jordan Wise and Shaun Edalati quickly seized on the opportunity, launching a startup named Reefer that acts as a marketing suite for cannabis dispensaries.")
 
 time_expressions = ['one','two','three','four','five','six','seven','eight','nine','ten','twenty','thirty',
                     'forty','fifty','sixty','seventy','eighty','ninety','hundred','thousand',
@@ -26,37 +17,20 @@ time_expressions = ['one','two','three','four','five','six','seven','eight','nin
 
 verb_time = ['said', 'next', 'coming', 'this', 'previous']
 
+spec_chars = ['$', '-', ':']
 summarized_file = sys.argv[1]
 
-# with open(summarized_file, "r", encoding="latin1") as fp:
-#     file_contents = fp.read().splitlines()
-#     for sentence in file_contents:
-#         sentences = parser.raw_parse(sentence)
-        # print(sentences)
-
-# for s in sentences:
-#     # print(s)
-#     str1 = str(s)
-
-
-
-
-# nltk_tree = Tree.fromstring(str1)
-# # ptree = p.fromstring(str1)
-
-# print(ptree)
-#     if i.label() == 'S':
-#         head += traverse(i)
-#         break
-#     # print(i, i.label(),i.leaves())
-# print(head)
 
 word = ''
 head = []
 threshold = 10
 ignore_labels = ['DT', 'PP']
 overlap_flag = False
-l = []
+
+
+# pp_index = {}
+# pp_words = []
+# pcount = 0
 
 
 def traverse_tree(tree, label, parent_label, flag):
@@ -64,21 +38,33 @@ def traverse_tree(tree, label, parent_label, flag):
     # print("tree:", tree)
     # print("label:", label)
     # global overlap_flag
-
+    global pp_words
+    global pp_index
+    global  pcount
     if label != 'ROOT' and  label != 'S':
         if parent_label == tree.label():
             flag = True
-            return tree.leaves()
+            temp = []
+            for sub in tree:
+                if (len(head) + len (temp)) < threshold:
+                    temp.extend(sub.leaves())
+            return temp
+            # return tree.leaves()
 
     # Length of tree gives the number of child nodes it has.
     n = len(tree)
     # print(n)
-
+    parent = tree.label()
+    # if parent == 'PP':
+    #     pp_words = []
+    #     index = 0
+    #     pcount = 0
     for i, subtree in enumerate(tree):
 
         temp = []
-        parent = tree.label()
 
+        if parent == 'PP':
+            pcount += 1
         if type(subtree) == nltk.tree.Tree:
             #  Ignoring low content nodes
             if subtree.label() == "SBAR":
@@ -96,15 +82,26 @@ def traverse_tree(tree, label, parent_label, flag):
             # Ignoring low content nodes like time expressions.
             if word is not None:
                 # for item in word:
+                if word in spec_chars:
+                    return
                 j = 0
                 while j != len(word):
-                    if word[j].lower() in time_expressions:
+                    if word[j].lower() in time_expressions and (parent != 'NP' or parent != 'VP'):
                         word.remove(word[j])
                         j -= 1
-                        if head[-1].lower() in verb_time:
-                            head.remove(head[-1])
+                        if len(head) > 1:
+                            if head[-1].lower() in verb_time:
+                                head.remove(head[-1])
                     j += 1
                 head.extend(word)
+                # if parent == 'PP':
+                #     pp_words.extend(word)
+                #     if word:
+                #         index = 0
+                #         if len(pp_words) == 1:
+                #             index = head.index(word[0])
+                #         pp_index[index] = pcount
+
             if overlap_flag:
                 break
             # print(word)
@@ -116,7 +113,8 @@ def traverse_tree(tree, label, parent_label, flag):
         if i + 1 == n:
             return temp
 
-
+        # pp_index[index] = pp_words
+        # print(pp_index)
 parent_label = 'S'
 
 
@@ -127,6 +125,7 @@ def generate_headline(parsed_tree):
         if tree.label() == 'S':
 
             for subtree in tree:
+
                 overlap_flag = False
                 if subtree.label() == tree.label():
                     overlap_flag = True
@@ -139,12 +138,28 @@ def generate_headline(parsed_tree):
                     continue
 
 
-head = []
+# head = []
+# pp_count = 0
+# def cal_pp(tree):
+#     global pp_count
+#
+#     for i, subtree in enumerate(tree):
+#
+#         temp = []
+#         parent = tree.label()
+#
+#         if type(subtree) == nltk.tree.Tree:
+#             #  Ignoring low content nodes
+#             if subtree.label() == "PP":
+#                 pp_count += 1
+#             cal_pp(subtree)
+
 
 output_file  = open("headline.txt","w")
 with open(summarized_file, "r") as fp:
     file_contents = fp.read().splitlines()
     for sentence in file_contents:
+        sen_list = sentence.split()
 
         head = []
         sentences = parser.raw_parse(str(sentence))
@@ -155,9 +170,24 @@ with open(summarized_file, "r") as fp:
             str1 = str(s)
             # print(str1)
         nltk_tree = Tree.fromstring(str1)
-
+        # cal_pp(nltk_tree)
+        # print(pp_count)
         generate_headline(nltk_tree)
-        headline = " ".join(head)
+        ori_sen = " ".join(sen_list)
+        headline = (' '.join(word for word in head if word not in punctuation) + ".").capitalize()
+
+        # print(head)
+
+        # print(len(head), len(sen_list))
+        # print(len(head)/len(sen_list))
+        head_length = len(head)
+        # if head_length/len(sen_list) > 0.75:
+            # remove trailing PP
+        # headline = unrefined_headline.translate(string.maketrans("",""), string.punctuation)
+
+        print("Orignal: ", ori_sen)
+        print("Generated: ", headline)
+        print("\n")
         output_file.write(headline + "\n")
 fp.close()
 output_file.close()
