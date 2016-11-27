@@ -11,6 +11,7 @@ from nltk.tokenize import sent_tokenize
 
 
 
+
 def chunk_tagged_sents(tagged_sents):
     from nltk.chunk import regexp
 
@@ -154,8 +155,14 @@ def extractDependentGloss(inputDict):
 
 
 
-
+depth = 0
 def digInto(stack,k,entry):
+    global depth
+    depth += 1
+    # print(depth)
+
+    if(depth > 40):
+        return stack
     for eachItem in k:
         if(eachItem['governor'] == entry['dependent']):
             stack.append(eachItem)
@@ -239,60 +246,60 @@ def getSentenceTree(posTree):
             print("LEAF")
 
 
-def makePossibleHeadlines(result):
-
-    orderedSubset = dict()
-
-    NNPList = []
-    NNList = []
-
-    ignoreIndex = []
-
-
-
-    # Remove preposed adjuncts based on commas
-    treeLength = len(result)
-    for nodeIndex in range(0,treeLength):
-        # Check if its not a sub tree
-        if(not hasattr(result[nodeIndex],"_label")):
-            if(result[nodeIndex][0] == ','):
-                nodeList = [result[nodeIndex - 1],result[nodeIndex + 1]]
-                NNPNodes = getNNPNode(nodeList)
-                if(NNPNodes):
-                    orderedSubset[nodeIndex] = ('NP',NNPNodes)
-                    NNPList += NNPNodes
-
-    # Complex NP not found pick up simple NP
-    if(len(NNPList) == 0):
-        for nodeIndex in range(0, treeLength):
-            if (hasattr(result[nodeIndex], "_label")):
-                NNPNodes = getSingleNNPNode([result[nodeIndex]])
-                if(NNPNodes):
-                    orderedSubset[nodeIndex] = ('NP', NNPNodes)
-                    NNPList += NNPNodes
-
-
-
-    #Pick up simple NP with NN
-    for nodeIndex in range(0,treeLength):
-        if(hasattr(result[nodeIndex],"_label")):
-            NNNodes = getSingleNNNode([result[nodeIndex]])
-            if(NNNodes):
-                orderedSubset[nodeIndex] = ('NP', NNNodes)
-                NNList += NNPNodes
-
-    #Get the verb (Predicates) that join Subject and Object
-    for nodeIndex in range(0, treeLength):
-        if(hasattr(result[nodeIndex],"_label")):
-            if(result[nodeIndex]._label == 'VP'):
-                mainverbs = getMainVerb(result[nodeIndex])
-                orderedSubset[nodeIndex] = ('V',mainverbs)
-
-
-
-
-
-    return orderedSubset
+# def makePossibleHeadlines(result):
+#
+#     orderedSubset = dict()
+#
+#     NNPList = []
+#     NNList = []
+#
+#     ignoreIndex = []
+#
+#
+#
+#     # Remove preposed adjuncts based on commas
+#     treeLength = len(result)
+#     for nodeIndex in range(0,treeLength):
+#         # Check if its not a sub tree
+#         if(not hasattr(result[nodeIndex],"_label")):
+#             if(result[nodeIndex][0] == ','):
+#                 nodeList = [result[nodeIndex - 1],result[nodeIndex + 1]]
+#                 NNPNodes = getNNPNode(nodeList)
+#                 if(NNPNodes):
+#                     orderedSubset[nodeIndex] = ('NP',NNPNodes)
+#                     NNPList += NNPNodes
+#
+#     # Complex NP not found pick up simple NP
+#     if(len(NNPList) == 0):
+#         for nodeIndex in range(0, treeLength):
+#             if (hasattr(result[nodeIndex], "_label")):
+#                 NNPNodes = getSingleNNPNode([result[nodeIndex]])
+#                 if(NNPNodes):
+#                     orderedSubset[nodeIndex] = ('NP', NNPNodes)
+#                     NNPList += NNPNodes
+#
+#
+#
+#     #Pick up simple NP with NN
+#     for nodeIndex in range(0,treeLength):
+#         if(hasattr(result[nodeIndex],"_label")):
+#             NNNodes = getSingleNNNode([result[nodeIndex]])
+#             if(NNNodes):
+#                 orderedSubset[nodeIndex] = ('NP', NNNodes)
+#                 NNList += NNPNodes
+#
+#     #Get the verb (Predicates) that join Subject and Object
+#     for nodeIndex in range(0, treeLength):
+#         if(hasattr(result[nodeIndex],"_label")):
+#             if(result[nodeIndex]._label == 'VP'):
+#                 mainverbs = getMainVerb(result[nodeIndex])
+#                 orderedSubset[nodeIndex] = ('V',mainverbs)
+#
+#
+#
+#
+#
+#     return orderedSubset
 
 def TreeToList(inputTree):
     returnList = list()
@@ -398,11 +405,15 @@ def initTagger(summarizedText):
 
 
 
-
+def unique_list(l):
+    ulist = []
+    [ulist.append(x) for x in l if x not in ulist]
+    return ulist
 
 
 
 if __name__ == "__main__":
+
     # Get the file path from command line
     # requires sys package
     # Sanity check for input filename
@@ -414,7 +425,7 @@ if __name__ == "__main__":
     else:
         # print("Error file not found. Please check that the file exists\n")
         # print("File path to be specified as input command line argument\n")
-        exit(1)
+        exit(0)
 
     # filePath = "Data/sum_test3.txt"
     summarizedText = readFile(filePath)
@@ -423,28 +434,35 @@ if __name__ == "__main__":
 
     # print("-------")
 
-    try:
-        possibleHeadlies = list()
-        dictionaryParts = initTagger(summarizedText)
+    # try:
+    possibleHeadlies = list()
+    dictionaryParts = initTagger(summarizedText)
 
-        for eachSubject in dictionaryParts['subject']:
-            for eachVerb in dictionaryParts['verb']:
-                if(dictionaryParts['object']):
-                    for eachObject in dictionaryParts['object']:
-                        # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb+" "+' '.join(eachObject)))
-                        possibleHeadlies.append(' '.join(eachSubject) + " " + eachVerb + " " + ' '.join(eachObject))
-                else:
-                    # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb))
-                    possibleHeadlies.append(' '.join(eachSubject) + " " + eachVerb)
+    for eachSubject in dictionaryParts['subject']:
+        for eachVerb in dictionaryParts['verb']:
+            if(dictionaryParts['object']):
+                for eachObject in dictionaryParts['object']:
+                    # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb+" "+' '.join(eachObject)))
+                    possibleHeadlies.append(' '.join(eachSubject) + " " + eachVerb + " " + ' '.join(eachObject))
+            else:
+                # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb))
+                possibleHeadlies.append(' '.join(eachSubject) + " " + eachVerb)
 
-        with open('headline.txt', 'w', encoding="latin1") as f:
-            headlineString = random.choice(possibleHeadlies)
-            f.write(headlineString+".")
-        f.close()
 
-    except:
-        exit(1)
+    postProcessedHeadlines = list()
+    for eachHeadline in possibleHeadlies:
+        postProcessedHeadlines.append(' '.join(unique_list(eachHeadline.split())))
 
+    with open('headline.txt', 'w', encoding="latin1") as f:
+        headlineString = random.choice(postProcessedHeadlines)
+        f.write(headlineString+".")
+    f.close()
+
+    # except:
+    #     print("Exception: Check whether you have started the CoreNLP server e.g.\n")
+    #     print("$ cd stanford-corenlp-full-2015-12-09/ \n")
+    #     print("$ java -mx4g -cp \"*\" edu.stanford.nlp.pipeline.StanfordCoreNLPServer")
+    #
     # print("-------")
 
     # filePath = "Data/sum_test2.txt"
