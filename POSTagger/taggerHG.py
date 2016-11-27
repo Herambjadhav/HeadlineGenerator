@@ -116,6 +116,7 @@ def makeSentences(dependecyGraph):
         if (eachObject['governor'] == rootIndex):
             connectedObjects.append(eachObject)
 
+
     # Connected Object
     if(len(connectedObjects) > 0):
         blah = digInto(list(),k,connectedObjects[0])
@@ -388,10 +389,10 @@ def initTagger(summarizedText):
         objects = filterNounPhrases(NPNodes, sentenceBlocks['object'])
 
 
-        porter_stemmer = PorterStemmer()
-        verb = porter_stemmer.stem(verb)
-        lmtzr = WordNetLemmatizer()
-        verb = lmtzr.lemmatize(verb, 'v')+'s'
+        # porter_stemmer = PorterStemmer()
+        # verb = porter_stemmer.stem(verb)
+        # lmtzr = WordNetLemmatizer()
+        # verb = lmtzr.lemmatize(verb, 'v')+'s'
 
         keyParts = dict()
         keyParts['subject'] = subjects
@@ -410,7 +411,8 @@ def unique_list(l):
     [ulist.append(x) for x in l if x not in ulist]
     return ulist
 
-
+def upperfirst(x):
+    return x[0].upper() + x[1:]
 
 if __name__ == "__main__":
 
@@ -438,25 +440,47 @@ if __name__ == "__main__":
     possibleHeadlies = list()
     dictionaryParts = initTagger(summarizedText)
 
-    for eachSubject in dictionaryParts['subject']:
-        for eachVerb in dictionaryParts['verb']:
-            if(dictionaryParts['object']):
-                for eachObject in dictionaryParts['object']:
-                    # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb+" "+' '.join(eachObject)))
-                    possibleHeadlies.append(' '.join(eachSubject) + " " + eachVerb + " " + ' '.join(eachObject))
-            else:
-                # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb))
-                possibleHeadlies.append(' '.join(eachSubject) + " " + eachVerb)
+    # If dependency parser doesnt get enough data from root
+    # return the split sentence that includes the root
+    finalSentence = ''
 
 
-    postProcessedHeadlines = list()
-    for eachHeadline in possibleHeadlies:
-        postProcessedHeadlines.append(' '.join(unique_list(eachHeadline.split())))
+    if(len(dictionaryParts['subject']) > 0 and len(dictionaryParts['verb']) > 0 and len(dictionaryParts['object']) > 0):
+        for eachSubject in dictionaryParts['subject']:
+            for eachVerb in dictionaryParts['verb']:
+                if(dictionaryParts['object']):
+                    for eachObject in dictionaryParts['object']:
+                        # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb+" "+' '.join(eachObject)))
+                        possibleHeadlies.append(' '.join(eachSubject) + " " + eachVerb + " " + ' '.join(eachObject))
+                else:
+                    # print(POSTagger.ginger.gingerCheck(' '.join(eachSubject)+" "+eachVerb))
+                    possibleHeadlies.append(' '.join(eachSubject) + " " + eachVerb)
 
-    with open('headline.txt', 'w', encoding="latin1") as f:
-        headlineString = random.choice(postProcessedHeadlines)
-        f.write(headlineString+".")
-    f.close()
+
+        postProcessedHeadlines = list()
+        for eachHeadline in possibleHeadlies:
+            postProcessedHeadlines.append(' '.join(unique_list(eachHeadline.split())))
+
+        with open('headline.txt', 'w', encoding="latin1") as f:
+            headlineString = random.choice(postProcessedHeadlines)
+            f.write(upperfirst(headlineString.lstrip())+".")
+        f.close()
+
+    else:
+
+        if("," in summarizedText):
+            splitText = summarizedText.split(",")
+
+
+            for eachsplitSentence in splitText:
+                if (dictionaryParts['verb'][0] in eachsplitSentence):
+                    finalSentence = str(eachsplitSentence)
+        else:
+            finalSentence = summarizedText
+
+        with open('headline.txt', 'w', encoding="latin1") as f:
+            f.write(upperfirst(finalSentence.lstrip())+ ".")
+        f.close()
 
     # except:
     #     print("Exception: Check whether you have started the CoreNLP server e.g.\n")
