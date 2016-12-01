@@ -1,0 +1,103 @@
+﻿1;textRank;hedgeTrimmer;HedgeTrimmer headline;blah blah!
+2;lexRank;extraction;Extraction based headline;blah blah 123 blah!
+3;lexRank;hedgeTrimmer;California shines like a ray of hope for Democrats;good one!
+4;lexRank;extraction;a national food conference comes various locations.;ek number!
+3;lexRank;hedgeTrimmer;Taste Talks , a national food conference , is coming to various locations throughout Los Angeles this weekend for days of panels , parties , networking events , interviews and of course , delicious food;do number!
+3;textRank;extraction;The Trojans remain banged up on both sides of the ball.;
+3;textRank;hedgeTrimmer;Trojans remain banged up on both sides of ball ,;
+3;textRank;hedgeTrimmer;Mars slowed things down with ballads;
+2;textRank;extraction;Mars slowed the album.;
+1;lexRank;hedgeTrimmer;Mars retracted mentality , however ,;
+1;lexRank;extraction;Mars retracted the second song.;
+2;textRank;hedgeTrimmer;Kanazi emphasized the importance of the various social justice groups coming together and working toward a common goal;
+3;textRank;extraction;Kanazi emphasized the various social justice groups.;
+1;lexRank;hedgeTrimmer;There is power in local fronts;
+1;lexRank;extraction;?There is power in local fronts.? .;
+1;textRank;extraction;Strawberry sherbert stood the flavors.;
+1;lexRank;extraction;The smell of waffle cones wafting through the air precedes the shop itself. .;
+2;textRank;extraction;This new shop offering expanded California locations.;
+1;textRank;extraction;Was able to capture the character?s madness without sacrificing her impeccable vocal technique.;
+1;textRank;hedgeTrimmer;Park , a current participant in L.A. Opera?s Domingo-Colburn-Stein Young Artist Program , was able to capture the character?s madness without sacrificing her impeccable vocal technique , as was evident in her second aria ? Der H�lle Rache .;
+1;textRank;hedgeTrimmer;McAlpine was head coach at Washington State Anthony was starting out at Maryland Andrews was leading the Notre Dame offense in goals as a freshman;
+1;lexRank;hedgeTrimmer;McAlpine was head coach at Washington State Anthony was starting out at Maryland Andrews was leading the Notre Dame offense in goals as a freshman;
+1;lexRank;extraction;The Trojans hired McAlpine. .;
+1;textRank;hedgeTrimmer;De La Torre was joined by China Adams , a design professor in Roski , and Michael Chang , a senior majoring in fine arts , on the panel discussion emphasized the overlapping nature of artistic production in every industry and mode of thinking
+;
+1;textRank;extraction;De La Torre was joined by China Adams.;
+2;lexRank;hedgeTrimmer;Seah curates clothing with the goal of sustainability , integrating the art of taste in fashion with eco-friendly and entrepreneurial intentions
+;
+2;lexRank;extraction;Seah curates the goal.;
+1;textRank;hedgeTrimmer;The Lloyd Greif Center for Entrepreneurial Studies is the oldest institute of its kind the joint minor in Innovation : The Digital Entrepreneur , was co-established by the Viterbi School of Engineering and the Marshall School of Business to prepare students interested in business and innovation
+;
+1;textRank;extraction;Entrepreneurial institute kind.;
+1;textRank;extraction;Entrepreneurial institute kind.;
+2;lexRank;hedgeTrimmer;The interactive exhibits portion of event will have booths for attendees to pitch their own ideas
+;
+1;lexRank;extraction;Portion have attendees.;
+2;lexRank;extraction;The interactive exhibits have booths.;
+2;textRank;hedgeTrimmer;Roski students have curated contemporary works in the same vein
+;
+4;textRank;extraction;The Roski students curated contemporary works.;
+1;lexRank;hedgeTrimmer;they?ll have something to take with them and ponder further
+;
+1;lexRank;extraction;They?ll have something to take with them and ponder further. .;
+1;textRank;hedgeTrimmer;Previous installments of series used only to rooms of G2?s space Basse has decided to honor the diversity and number of national parks in the American West by using all of the gallery?s rooms
+;
+1;textRank;extraction;Previous installments used rooms.;
+1;textRank;extraction;The series used rooms.;
+4;textRank;hedgeTrimmer;Indian Prime Minister Narendra Modi on urged the nation 's small traders and daily wage earners to embrace digital payment channels ,
+;
+4;textRank;extraction;Indian Prime Minister Narendra Modi urged small traders.;
+3;lexRank;extraction;But why don't we make a beginning for a less-cash society in India?.;
+1;textRank;extraction;Energy companies and banks should be able to grow and hire more employees as Trump reduces many of the strangulating rules and regulations that have held back energy expansion and bank lending..;
+2;lexRank;hedgeTrimmer;They shift with storms and tides , Holmes said
+;
+1;textRank;extraction;Said Patrick Holmes.;
+1;textRank;extraction;Said Patrick Holmes.;
+1;textRank;hedgeTrimmer;A look at Apple 's support forums suggests users said
+company in post on its website
+;
+2;textRank;extraction;A look at Apple's support forums suggests that people have been reporting similar problems since at least 2015; users said their phones shut off and could not be restarted until they were plugged in again..;
+2;lexRank;hedgeTrimmer;Apple did not offer many details on why the phones are shutting down , except to say that the problem is ? not a safety issue
+;
+1;lexRank;extraction;Is your iPhone 6S randomly shutting down? Apple did not offer many details on why the phones are shutting down.;
+1;textRank;hedgeTrimmer;Roskomnadzor , Russia 's communications authority , told Interfax news agency on Thursday a number of Internet service providers appeared to have immediately begun blocking the website , according to media reports
+activists said
+;
+1;textRank;extraction;Authority told Interfax.;
+1;lexRank;hedgeTrimmer;Soldatov suggested
+;
+1;lexRank;extraction;?They expect LinkedIn to rush to the Kremlin for talks. Soldatov suggested that LinkedIn's relatively small size in Russia made it a target. .;
+2;textRank;hedgeTrimmer;The $ 700 million project , aims to better support the lives of USC students
+local residents have voiced their anxieties about increasing housing prices and the unaffordability of housing around the University Park Campus in general
+;
+3;textRank;extraction;Aims to better support the lives of USC students..;
+1;lexRank;hedgeTrimmer;Village will become part of the community in that way . Regardless , Keys has maintained that , given the emphasis on community , the space at the Village will be sufficient for student wellness purposes
+;
+1;lexRank;extraction;The Village will become part of the community in that way. Regardless.;
+2;textRank;hedgeTrimmer;extension will include new stations : Palms , Westwood/Rancho Park , Expo/Sepulveda , Expo/Bundy , 26th Street/Bergamot , 17th Street/Santa Monica College and downtown Santa Monica
+;
+3;textRank;extraction;The extension include downtown Santa Monica.;
+2;lexRank;hedgeTrimmer;extension is expected to alleviate car traffic in Santa Monica
+;
+2;lexRank;extraction;The extension is expected to alleviate car traffic in Santa Monica. .;
+1;textRank;hedgeTrimmer;? schools and departments participate in planning , training and drills to ensure we can respond to and recover from all types of emergencies including fires , power outages , floods , weather incidents and much more
+;
+1;textRank;extraction;?All schools and departments participate in planning.;
+1;lexRank;hedgeTrimmer;University?s financial officers are prepared to exercise emergency purchasing powers , payroll and accounting functions if the need ever arises
+;
+1;lexRank;extraction;The University?s financial officers are prepared to exercise emergency purchasing powers.;
+1;textRank;hedgeTrimmer;Ellison had previously planned a similar $ 115 million donation to Harvard University in 2006 for cancer research , but reneged on the gift due to concerns about how the money would be handled the University?s then-president stepped down , according to the Los Angeles Times
+The Lawrence J. Ellison Institute for Transformative Medicine of USC will be led by David Agus , a professor of engineering and medicine at USC and the current director of the Center for Applied Molecular Medicine and USC Westside Cancer Center
+;
+2;textRank;extraction;Ellison planned donation.;
+2;lexRank;hedgeTrimmer;? investment by Larry Ellison in USC is as inspirational it will serve as a dynamic force for change in how we approach cancer treatment and prevention , ? Ellison?s gift matches the largest single donation ever given to the school
+;
+3;lexRank;extraction;? Ellison?s gift matches the largest single donation ever given to the school. .;
+3;textRank;extraction;Assistant coach Alyssa Leonard representing USC.;
+1;lexRank;hedgeTrimmer;she went 19-0 and was tied for the MPSF lead with 49 ground balls per game
+;
+1;lexRank;extraction;She went 19-0 and was tied for the MPSF lead with 49 ground balls per game. .;
+3;textRank;extraction;Ellison planned donation.;
+3;textRank;hedgeTrimmer;Suspect fled from police engaging in lewd behavior in doheny memorial library.
+;

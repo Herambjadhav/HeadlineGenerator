@@ -1,0 +1,237 @@
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+                
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet"
+			href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+			integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+			crossorigin="anonymous">
+		
+		<!-- Latest compiled and minified JavaScript -->
+		<script
+			src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+			integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+			crossorigin="anonymous">
+		</script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.js"></script>
+        
+        <script>
+            $(document).ready(function(){
+                var sumT = false;
+                var sumL = false;
+                var headH = false;
+                var headE = false;
+        
+                $("#lexRank").click(function () {
+                    sumL = true;
+                    sumT = false;
+                    $("#summary").val("");
+                    $.post( "headline.php", { article: $('#article').val(), lines: $('#lines').val(), type : '2' })
+                        .done(function( data ) {
+                            $("#summary").val(data);
+                    });
+                });
+                
+                $("#textRank").click(function () {
+                    sumT = true;
+                    sumL = false;
+                    $("#summary").val("");
+                    $.post( "headline.php", { article: $('#article').val(), lines: $('#lines').val(), type : '1' })
+                        .done(function( data ) {
+                            $("#summary").val(data);
+                    });
+                });
+                
+                $("#hedge").click(function () {
+                    headH = true;
+                    headE = false;
+                    $("#headline").val("");
+                    $.post( "headline.php", { headline: true, type : '1' })
+                        .done(function( data ) {
+                            $("#headline").val(data);
+                    });
+                });
+                
+                $("#extraction").click(function () {
+                    headE = true;
+                    headH = false;
+                    $("#headline").val("");
+                    $.post( "headline.php", { headline: true, type : '2' })
+                        .done(function( data ) {
+                            $("#headline").val(data);
+                    });
+                });
+                
+                var sumAlgo;
+                var headAlgo;
+                
+                function set(){
+                    if(headE)
+                        headAlgo = "extraction";
+                    else
+                        headAlgo = "hedgeTrimmer";
+                    
+                    if(sumL)
+                        sumAlgo = "lexRank";
+                    else
+                        sumAlgo = "textRank";
+                }
+                
+                $("#rating1").click(function () {
+                    set();
+                    $.post( "headline.php", { feedback: true, type : '1', head: $("#headline").val(), sumAlgo: sumAlgo, headAlgo: headAlgo, comment: $("#comment").val() })
+                        .done(function( data ) {
+                            alert("Thank you!");
+                            counts = data.split(" ");
+                            chart.update();
+                    });
+                });
+                
+                $("#rating2").click(function () {
+                    set();
+                    $.post( "headline.php", { feedback: true, type : '2', head: $("#headline").val(), sumAlgo: sumAlgo, headAlgo: headAlgo, comment: $("#comment").val() })
+                        .done(function( data ) {
+                            alert("Thank you!");
+                            counts = data.split(" ");
+                            chart.update();
+                    });
+                });
+                
+                $("#rating3").click(function () {
+                    set();
+                    $.post( "headline.php", { feedback: true, type : '3', head: $("#headline").val(), sumAlgo: sumAlgo, headAlgo: headAlgo, comment: $("#comment").val() })
+                        .done(function( data ) {
+                            alert("Thank you!");
+                            counts = data.split(" ");
+                            chart.update();
+                    });
+                });
+                
+                $("#rating4").click(function () {
+                    set();
+                    $.post( "headline.php", { feedback: true, type : '4', head: $("#headline").val(), sumAlgo: sumAlgo, headAlgo: headAlgo, comment: $("#comment").val() })
+                        .done(function( data ) {
+                            alert("Thank you!");
+                            counts = data.split(" ");
+                            chart.update();
+                    });
+                });
+            });
+        </script>
+    </head>
+    <div style='background:black;margin-top:0;color:white;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);' class="page-header">
+        <div class="row">
+            <div class="col-md-12">
+                <h2 style="margin: 0;font-weight:700; padding-left:15;padding-bottom:5;padding-top:5">HeadlineGenerator</h2>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div style='margin-top:0;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);'>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group" style="margin: 10px;">
+                    <label for="aricle">Paste your article here:</label>
+                    <textarea class="form-control" rows="10" id="article"></textarea>
+                    <label for="lines">Enter the required number of summary lines:</label>
+                    <input type="text" class="form-control" id="lines" placeholder="4" >
+                    <label for="aricle">Summarize using:</label>
+                    <div class="row">
+                        <div class="col-md-6"><button id="textRank" class="btn btn-default btn-block">TextRank</button></div>
+                        <div class="col-md-6"><button id="lexRank" class="btn btn-default btn-block">LexRank</button></div>
+                    </div>
+                    
+                    <label for="aricle">Generate Headline using:</label>
+                    <div class="row">
+                        <div class="col-md-6"><button id="hedge" class="btn btn-default btn-block">HedgeTrimmer</button></div>
+                        <div class="col-md-6"><button id="extraction" class="btn btn-default btn-block">KeywordExtraction</button></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group" style="margin: 10px;">
+                    <label for="headline">Headine:</label>
+                    <textarea class="form-control" row="2" id="headline"></textarea>
+                    <label for="summary">Summary:</label>
+                    <textarea class="form-control" rows="5" id="summary"></textarea>
+                    <label for="comment">Leave a comment:</label>
+                    <textarea class="form-control" rows="3" id="comment"></textarea>
+                    <label for="feedback">Rate the aptness of headline generated:</label>
+                    <div class="row">
+                        <div class="col-md-12"><button id="rating1" class="btn btn-danger btn-block">Makes no sense</button></div>
+                        <div class="col-md-12"><button id="rating2" class="btn btn-warning btn-block">Starting to make some sense</button></div>
+                        <div class="col-md-12"><button id="rating3" class="btn btn-info btn-block">Pretty Good</button></div>
+                        <div class="col-md-12"><button id="rating4" class="btn btn-success btn-block">You are awesome!</button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <br>
+    <div class="row" style="margin-bottom:25px;margin-left:0.5;margin-right:0.5;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+            <div class="col-md-12"><canvas id="skills" width="200" height="450"></canvas></div>
+        </div>
+
+        <script>
+            var counts;
+            var chart;
+            $.post( "headline.php", { chart : true })
+                .done(function( data ) {
+                    drawChart(data);
+            });
+            
+            function drawChart(data){
+                
+                counts = data.split(" ");
+                var othersData = {
+                labels: [
+                    "Makes No sense",
+                    "Starting to make some sense",
+                    "Pretty good!",
+                    "You are Awesome!!"
+                ],
+                datasets: [
+                    {
+                        label: "Statistics",
+                        backgroundColor: [
+                            'rgba(255,99,132,1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                         borderColor: [
+                           'rgba(255,99,132,1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1,
+                        data: [counts[0], counts[1], counts[2], counts[3]],
+                    }]
+            };
+            
+            var skills = document.getElementById('skills').getContext('2d');
+            
+            chart = new Chart(skills, {
+                type: 'bar',
+                data: othersData,
+                animation:{
+                    animateScale:true
+                },
+                options: {
+                    responsive: true, 
+                    maintainAspectRatio : false
+                }
+            });
+    
+            }
+            
+            
+            
+        </script>
+</html>
