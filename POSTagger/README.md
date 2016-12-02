@@ -1,7 +1,7 @@
 # HeadlineGenerator/POSTagger
 
 taggerHG.py
-Takes the input summarized text file and uses nltk package to identify Parts of speech.
+Takes the input summarized text file and uses nltk package to identify Parts of speech. Uses Dependency graph extract main POS and root verb. Generates headlines along those words where the words are keywords in the text.
 
 keywords.py
 Takes an article and return the top n keywords based on frequency and excludes stopwords.
