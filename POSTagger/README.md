@@ -6,11 +6,11 @@ Takes the input summarized text file and uses nltk package to identify Parts of 
 keywords.py
 Takes an article and return the top n keywords based on frequency and excludes stopwords.
 
-Run:
-python taggerHG.py sum_test1.txt 
+Run example:
+python taggerHG.py summarize.txt 
 
-where sum_tese1.txt is the input summarized file.
-
+where summarize.txt is the input summarized file.
+generates a file called headline.txt
 
 References:
 <ul>
